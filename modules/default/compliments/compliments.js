@@ -99,7 +99,7 @@ Module.register("compliments", {
 		}
 
 		if (typeof compliments === "undefined") {
-			compliments = new Array();
+			compliments = [];
 		}
 
 		if (this.currentWeatherType in this.config.compliments) {

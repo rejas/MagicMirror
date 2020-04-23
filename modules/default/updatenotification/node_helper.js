@@ -36,7 +36,7 @@ module.exports = NodeHelper.create({
 				} catch (err) {
 					// Error when directory .git doesn't exist or doesn't have any remotes
 					// This module is not managed with git, skip
-					continue;
+
 				}
 			}
 		}

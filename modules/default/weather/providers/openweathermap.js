@@ -153,8 +153,7 @@ WeatherProvider.register("openweathermap", {
 			return this.fetchForecastDaily(forecasts);
 		}
 		// if weatherEndpoint does not match forecast or forecast/daily, what should be returned?
-		const days = [new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh)];
-		return days;
+		return [new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh)];
 	},
 
 	/*
