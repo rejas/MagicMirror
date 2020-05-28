@@ -1,4 +1,4 @@
-/* global Class, cloneObject, Loader, MMSocket, nunjucks, Translator */
+/* global Class, cloneObject, Loader, MMSocket, nunjucks, Translator, Utils */
 
 /* Magic Mirror
  * Module Blueprint.
@@ -507,7 +507,7 @@ Module.create = function (name) {
 Module.register = function (name, moduleDefinition) {
 	if (moduleDefinition.requiresVersion) {
 		Log.log("Check MagicMirror version for module '" + name + "' - Minimum version:  " + moduleDefinition.requiresVersion + " - Current version: " + window.version);
-		if (cmpVersions(window.version, moduleDefinition.requiresVersion) >= 0) {
+		if (Utils.cmpVersions(window.version, moduleDefinition.requiresVersion) >= 0) {
 			Log.log("Version is ok!");
 		} else {
 			Log.warn("Version is incorrect. Skip module: '" + name + "'");
@@ -517,27 +517,3 @@ Module.register = function (name, moduleDefinition) {
 	Log.log("Module registered: " + name);
 	Module.definitions[name] = moduleDefinition;
 };
-
-/**
- * Compare two semantic version numbers and return the difference.
- *
- * @param {string} a Version number a.
- * @param {string} b Version number b.
- * @returns {number} A positive number if a is larger than b, a negative
- * number if a is smaller and 0 if they are the same
- */
-function cmpVersions(a, b) {
-	var i, diff;
-	var regExStrip0 = /(\.0+)+$/;
-	var segmentsA = a.replace(regExStrip0, "").split(".");
-	var segmentsB = b.replace(regExStrip0, "").split(".");
-	var l = Math.min(segmentsA.length, segmentsB.length);
-
-	for (i = 0; i < l; i++) {
-		diff = parseInt(segmentsA[i], 10) - parseInt(segmentsB[i], 10);
-		if (diff) {
-			return diff;
-		}
-	}
-	return segmentsA.length - segmentsB.length;
-}
