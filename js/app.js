@@ -177,30 +177,6 @@ function App() {
 	}
 
 	/**
-	 * Compare two semantic version numbers and return the difference.
-	 *
-	 * @param {string} a Version number a.
-	 * @param {string} b Version number b.
-	 * @returns {number} A positive number if a is larger than b, a negative
-	 * number if a is smaller and 0 if they are the same
-	 */
-	function cmpVersions(a, b) {
-		let i, diff;
-		const regExStrip0 = /(\.0+)+$/;
-		const segmentsA = a.replace(regExStrip0, "").split(".");
-		const segmentsB = b.replace(regExStrip0, "").split(".");
-		const l = Math.min(segmentsA.length, segmentsB.length);
-
-		for (i = 0; i < l; i++) {
-			diff = parseInt(segmentsA[i], 10) - parseInt(segmentsB[i], 10);
-			if (diff) {
-				return diff;
-			}
-		}
-		return segmentsA.length - segmentsB.length;
-	}
-
-	/**
 	 * Start the core app.
 	 *
 	 * It loads the config, then it loads all modules. When it's done it
