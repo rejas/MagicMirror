@@ -46,14 +46,28 @@ Module.register("compliments", {
 				self.config.compliments = JSON.parse(response);
 				self.updateDom();
 			});
-		} else if (this.config.advice) {
-			var xobj = new XMLHttpRequest();
+		}
+
+		if (this.config.advice) {
+			const xobj = new XMLHttpRequest();
 			xobj.overrideMimeType("application/json");
-			xobj.open("GET", "https://api.adviceslip.com/advice", true);
+			xobj.open("GET", "https://api.adviceslip.com/advice/search/a", true);
 			xobj.onreadystatechange = function () {
 				if (xobj.readyState === 4 && xobj.status === 200) {
 					const adviceResp = JSON.parse(xobj.responseText);
-					self.config.compliments = adviceResp.slip.advice;
+					const adviceAnytime = [];
+					adviceResp.slips.forEach(item => {
+						if (item.advice.length < 35) {
+							adviceAnytime.push(item.advice);
+						}
+					})
+					self.config.compliments = {
+						...self.config.compliments,
+						anytime: {
+							...self.config.compliments.anytime,
+							...adviceAnytime
+						}
+					}
 					self.updateDom();
 				}
 			};
@@ -165,6 +179,7 @@ Module.register("compliments", {
 			// no, sequential
 			// if doing sequential, don't fall off the end
 			index = this.lastIndexUsed >= compliments.length - 1 ? 0 : ++this.lastIndexUsed;
+
 		}
 
 		return compliments[index] || "";

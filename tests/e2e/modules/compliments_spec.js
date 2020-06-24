@@ -1,10 +1,13 @@
 const helpers = require("../global-setup");
 const expect = require("chai").expect;
+const wdajaxstub = require("webdriverajaxstub");
 
 const describe = global.describe;
 const it = global.it;
 const beforeEach = global.beforeEach;
 const afterEach = global.afterEach;
+
+const { generateAdvice } = require("./mocks");
 
 describe("Compliments module", function () {
 	helpers.setupTimeout(this);
@@ -123,3 +126,44 @@ describe("Compliments module", function () {
 		});
 	});
 });
+
+describe("Feature Advice", function () {
+	helpers.setupTimeout(this);
+
+	var app = null;
+
+	async function setup(responses) {
+		app = await helpers.startApplication({
+			args: ["js/electron.js"]
+		});
+
+		wdajaxstub.init(app.client, responses);
+
+		app.client.setupStub();
+	}
+
+	afterEach(function () {
+		return helpers.stopApplication(app);
+	});
+
+	describe("Config - advice:true", function () {
+		before(function () {
+			process.env.MM_CONFIG_FILE = "tests/configs/modules/compliments/compliments_advice.js";
+		});
+
+		it("one of the less than 35 char options", async function () {
+			const advice = generateAdvice()
+			await setup({ data: advice })
+			return app.client
+				.waitUntilWindowLoaded()
+				.getText(".compliments .module-content div")
+				.then(function (text) {
+					console.log('text', text)
+					expect(text).to.be.oneOf([
+						"Cars are bad investments.",
+						"Always block trolls."
+					]);
+				});
+		});
+	})
+})
