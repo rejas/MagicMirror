@@ -152,18 +152,16 @@ describe("Feature Advice", function () {
 		});
 
 		it("one of the less than 35 char options", async function () {
-			const advice = generateAdvice()
-			await setup({ data: advice })
+			const advice = generateAdvice();
+			await setup({ data: advice });
+
 			return app.client
 				.waitUntilWindowLoaded()
 				.getText(".compliments .module-content div")
 				.then(function (text) {
-					console.log('text', text)
-					expect(text).to.be.oneOf([
-						"Cars are bad investments.",
-						"Always block trolls."
-					]);
+					console.log("text", text);
+					expect(text).to.be.oneOf(["Cars are bad investments.", "Always block trolls."]);
 				});
 		});
-	})
-})
+	});
+});
