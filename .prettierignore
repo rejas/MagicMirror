@@ -1,5 +1,7 @@
 package-lock.json
 /config/**/*
+/coverage/**/*
 /vendor/**/*
 !/vendor/vendor.js
 .github/**/*
+.nyc_output/**/*
