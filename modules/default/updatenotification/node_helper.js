@@ -1,10 +1,11 @@
 const SimpleGit = require("simple-git");
-const simpleGits = [];
 const fs = require("fs");
 const path = require("path");
-const defaultModules = require(__dirname + "/../defaultmodules.js");
 const Log = require("logger");
 const NodeHelper = require("node_helper");
+
+var defaultModules = require(__dirname + "/../defaultmodules.js");
+var simpleGits = [];
 
 module.exports = NodeHelper.create({
 	config: {},
