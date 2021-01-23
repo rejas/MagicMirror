@@ -5,9 +5,109 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ❤️ **Donate:** Enjoying MagicMirror²? [Please consider a donation!](https://magicmirror.builders/donate) With your help we can continue to improve the MagicMirror²
 
-## [2.13.0] - Unreleased (Develop Branch - Please add your contributions to this release.)
+## [2.15.0] - Unreleased (Develop Branch)
 
-_This release is scheduled to be released on 2020-10-01._
+_This release is scheduled to be released on 2021-04-01._
+
+### Added
+
+- Added GitHub workflows for automated testing and changelog enforcement.
+- Added CodeCov badge to Readme.
+- Added CURRENTWEATHER_TYPE notification to currentweather and weather module, use it in compliments module.
+- Added `start:dev` command to the npm scripts for starting electron with devTools open.
+- Portuguese translations for "MODULE_CONFIG_CHANGED" and PRECIP.
+
+### Updated
+
+- Updated markdown files.
+- Cleaned up old code on server side.
+- Convert `-0` to `0` when displaying temperature.
+- Code cleanup for FEELS like and added {DEGREE} placeholder for FEELSLIKE for each language
+- Converted newsfeed module to use templates.
+- Update documentation and help screen about invalid config files.
+- Moving weather provider specific code and configuration into each provider and making hourly part of the interface.
+
+### Removed
+
+- Removed danger.js library.
+
+### Fixed
+
+- Added default log levels to stop calendar log spamming.
+- Fix socket.io cors errors, see [breaking change since socket.io v3](https://socket.io/docs/v3/handling-cors/)
+- Fix Issue with weather forecast icons due to fixed day start and end time (#2221)
+- Fix empty directory for each module's main javascript file in the inspector
+- Fix Issue with weather forecast icons unit tests with different timezones (#2221)
+- Fix issue with unencoded characters in translated strings when using nunjuck template (`Loading &hellip;` as an example)
+
+## [2.14.0] - 2021-01-01
+
+Special thanks to the following contributors: @Alvinger, @AndyPoms, @ashishtank, @bluemanos, @flopp999, @jakemulley, @jakobsarwary1, @marvai-vgtu, @mirontoli, @rejas, @sdetweil, @Snille & @Sub028.
+
+ℹ️ **Note:** This update uses new dependencies. Please update using the following command: `git pull && npm install`.
+
+### Added
+
+- Added new log level "debug" to the logger.
+- Added new parameter "useKmh" to weather module for displaying wind speed as kmh.
+- Chuvash translation.
+- Added Weatherbit as a provider to Weather module.
+- Added SMHI as a provider to Weather module.
+- Added Hindi & Gujarati translation.
+- Added optional support for DEGREE position in Feels like translation.
+- Added support for variables in nunjucks templates for translate filter.
+- Added Chuvash translation.
+- Calendar: new options "limitDays" and "coloredEvents".
+- Added new option "limitDays" - limit the number of discreet days displayed.
+- Added new option "customEvents" - use custom symbol/color based on keyword in event title.
+
+### Updated
+
+- Merging .gitignore in the config-folder with the .gitignore in the root-folder.
+- Weather module - forecast now show TODAY and TOMORROW instead of weekday, to make it easier to understand.
+- Update dependencies to latest versions.
+- Update dependencies eslint, feedme, simple-git and socket.io to latest versions.
+- Update lithuanian translation.
+- Update config sample.
+- Highlight required version mismatch.
+- No select Text for TouchScreen use.
+- Corrected logic for timeFormat "relative" and "absolute".
+- Added missing function call in module.show()
+- Translator variables can have falsy values (e.g. empty string)
+- Fix issue with weather module with DEGREE label in FEELS like
+
+### Deleted
+
+- Removed Travis CI intergration.
+
+### Fixed
+
+- JSON Parse translation files with comments crashing UI. (#2149)
+- Calendar parsing where RRULE bug returns wrong date, add Windows timezone name support. (#2145, #2151)
+- Wrong node-ical version installed (package.json) requested version. (#2153)
+- Fix calendar fetcher subsequent timing. (#2160)
+- Rename Greek translation to correct ISO 639-1 alpha-2 code (gr > el). (#2155)
+- Add a space after icons of sunrise and sunset. (#2169)
+- Fix calendar when no DTEND record found in event, startDate overlay when endDate set. (#2177)
+- Fix windspeed convertion error in ukmetoffice weather provider. (#2189)
+- Fix console.debug not having timestamps. (#2199)
+- Fix calendar full day event east of UTC start time. (#2200)
+- Fix non-fullday recurring rule processing. (#2216)
+- Catch errors when parsing calendar data with ical. (#2022)
+- Fix Default Alert Module does not hide black overlay when alert is dismissed manually. (#2228)
+- Weather module - Always displays night icons when local is other then English. (#2221)
+- Update Node-ical 0.12.4 , fix invalid RRULE format in cal entries
+- Fix package.json for optional electron dependency (2378)
+- Update node-ical version again, 0.12.5, change RRULE fix (#2371, #2379)
+- Remove undefined objects from modules array (#2382)
+- Update node-ical version again, 0.12.7, change RRULE fix (#2371, #2379), node-ical now throws error (which we catch)
+- Update simple-git version to 2.31 unhandled promise rejection (#2383)
+
+## [2.13.0] - 2020-10-01
+
+Special thanks to the following contributors: @bryanzzhu, @bugsounet, @chamakura, @cjbrunner, @easyas314, @larryare, @oemel09, @rejas, @sdetweil & @sthuber90.
+
+ℹ️ **Note:** This update uses new dependencies. Please update using the following command: `git pull && npm install`.
 
 ### Added
 
@@ -17,10 +117,10 @@ _This release is scheduled to be released on 2020-10-01._
 - Test coverage with Istanbul, run it with `npm run test:coverage`.
 - Add lithuanian language.
 - Added support in weatherforecast for OpenWeather onecall API.
-- Added config option to calendar-icons for recurring- and fullday-events
-- Added current, hourly (max 48), and daily (max 7) weather forecasts to weather module via OpenWeatherMap One Call API
-- Added eslint-plugin for jsdoc comments
-- Added new configDeepMerge option for module developers
+- Added config option to calendar-icons for recurring- and fullday-events.
+- Added current, hourly (max 48), and daily (max 7) weather forecasts to weather module via OpenWeatherMap One Call API.
+- Added eslint-plugin for jsdoc comments.
+- Added new configDeepMerge option for module developers.
 
 ### Updated
 
@@ -28,10 +128,8 @@ _This release is scheduled to be released on 2020-10-01._
 - Cleaned up newsfeed module.
 - Cleaned up jsdoc comments.
 - Cleaned up clock tests.
-- Move lodash into devDependencies, update other dependencies
-- Switch from ical to node-ical library
-
-### Deleted
+- Move lodash into devDependencies, update other dependencies.
+- Switch from ical to node-ical library.
 
 ### Fixed
 

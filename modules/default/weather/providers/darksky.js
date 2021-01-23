@@ -15,6 +15,15 @@ WeatherProvider.register("darksky", {
 	// Not strictly required, but helps for debugging.
 	providerName: "Dark Sky",
 
+	// Set the default config properties that is specific to this provider
+	defaults: {
+		apiBase: "https://cors-anywhere.herokuapp.com/https://api.darksky.net",
+		weatherEndpoint: "/forecast",
+		apiKey: "",
+		lat: 0,
+		lon: 0
+	},
+
 	units: {
 		imperial: "us",
 		metric: "si"
@@ -62,7 +71,7 @@ WeatherProvider.register("darksky", {
 
 	// Implement WeatherDay generator.
 	generateWeatherDayFromCurrentWeather(currentWeatherData) {
-		const currentWeather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+		const currentWeather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 
 		currentWeather.date = moment();
 		currentWeather.humidity = parseFloat(currentWeatherData.currently.humidity);
@@ -80,7 +89,7 @@ WeatherProvider.register("darksky", {
 		const days = [];
 
 		for (const forecast of forecasts) {
-			const weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+			const weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 
 			weather.date = moment(forecast.time, "X");
 			weather.minTemperature = forecast.temperatureMin;

@@ -87,6 +87,19 @@ describe("Weather module", function () {
 			});
 		});
 
+		describe("Compliments Integration", function () {
+			before(function () {
+				process.env.MM_CONFIG_FILE = "tests/configs/modules/weather/currentweather_compliments.js";
+			});
+
+			it("should render a compliment based on the current weather", async function () {
+				const weather = generateWeather();
+				await setup({ template, data: weather });
+
+				return app.client.waitUntilTextExists(".compliments .module-content span", "snow", 10000);
+			});
+		});
+
 		describe("Configuration Options", function () {
 			before(function () {
 				process.env.MM_CONFIG_FILE = "tests/configs/modules/weather/currentweather_options.js";
@@ -186,7 +199,7 @@ describe("Weather module", function () {
 				const weather = generateWeatherForecast();
 				await setup({ template, data: weather });
 
-				const days = ["Fri", "Sat", "Sun", "Mon", "Tue"];
+				const days = ["Today", "Tomorrow", "Sun", "Mon", "Tue"];
 
 				for (const [index, day] of days.entries()) {
 					await app.client.waitUntilTextExists(`.weather table.small tr:nth-child(${index + 1}) td:nth-child(1)`, day, 10000);

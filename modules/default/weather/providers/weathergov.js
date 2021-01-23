@@ -19,6 +19,14 @@ WeatherProvider.register("weathergov", {
 	// But for debugging (and future alerts) it would be nice to have the real name.
 	providerName: "Weather.gov",
 
+	// Set the default config properties that is specific to this provider
+	defaults: {
+		apiBase: "https://api.weatherbit.io/v2.0",
+		weatherEndpoint: "/forecast",
+		lat: 0,
+		lon: 0
+	},
+
 	// Flag all needed URLs availability
 	configURLs: false,
 
@@ -131,11 +139,11 @@ WeatherProvider.register("weathergov", {
 	 * ... object needs data in units based on config!
 	 */
 	generateWeatherObjectFromCurrentWeather(currentWeatherData) {
-		const currentWeather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+		const currentWeather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 
 		currentWeather.date = moment(currentWeatherData.timestamp);
 		currentWeather.temperature = this.convertTemp(currentWeatherData.temperature.value);
-		currentWeather.windSpeed = this.covertSpeed(currentWeatherData.windSpeed.value);
+		currentWeather.windSpeed = this.convertSpeed(currentWeatherData.windSpeed.value);
 		currentWeather.windDirection = currentWeatherData.windDirection.value;
 		currentWeather.minTemperature = this.convertTemp(currentWeatherData.minTemperatureLast24Hours.value);
 		currentWeather.maxTemperature = this.convertTemp(currentWeatherData.maxTemperatureLast24Hours.value);
@@ -179,7 +187,7 @@ WeatherProvider.register("weathergov", {
 		let maxTemp = [];
 		// variable for date
 		let date = "";
-		let weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+		let weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 		weather.precipitation = 0;
 
 		for (const forecast of forecasts) {
@@ -191,7 +199,7 @@ WeatherProvider.register("weathergov", {
 				// push weather information to days array
 				days.push(weather);
 				// create new weather-object
-				weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+				weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 
 				minTemp = [];
 				maxTemp = [];
@@ -238,12 +246,16 @@ WeatherProvider.register("weathergov", {
 			return temp;
 		}
 	},
-	// conversion to mph
-	covertSpeed(metSec) {
+	// conversion to mph or kmh
+	convertSpeed(metSec) {
 		if (this.config.windUnits === "imperial") {
 			return metSec * 2.23694;
 		} else {
-			return metSec;
+			if (this.config.useKmh) {
+				return metSec * 3.6;
+			} else {
+				return metSec;
+			}
 		}
 	},
 	// conversion to inches

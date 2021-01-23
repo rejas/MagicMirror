@@ -14,6 +14,18 @@ WeatherProvider.register("openweathermap", {
 	// But for debugging (and future alerts) it would be nice to have the real name.
 	providerName: "OpenWeatherMap",
 
+	// Set the default config properties that is specific to this provider
+	defaults: {
+		apiVersion: "2.5",
+		apiBase: "https://api.openweathermap.org/data/",
+		weatherEndpoint: "/weather",
+		locationID: false,
+		location: false,
+		lat: 0,
+		lon: 0,
+		apiKey: ""
+	},
+
 	// Overwrite the fetchCurrentWeather method.
 	fetchCurrentWeather() {
 		this.fetchData(this.getUrl())
@@ -56,8 +68,8 @@ WeatherProvider.register("openweathermap", {
 			.finally(() => this.updateAvailable());
 	},
 
-	// Overwrite the fetchWeatherData method.
-	fetchWeatherData() {
+	// Overwrite the fetchWeatherHourly method.
+	fetchWeatherHourly() {
 		this.fetchData(this.getUrl())
 			.then((data) => {
 				if (!data) {
@@ -69,12 +81,24 @@ WeatherProvider.register("openweathermap", {
 				this.setFetchedLocation(`(${data.lat},${data.lon})`);
 
 				const weatherData = this.generateWeatherObjectsFromOnecall(data);
-				this.setWeatherData(weatherData);
+				this.setWeatherHourly(weatherData.hours);
 			})
 			.catch(function (request) {
 				Log.error("Could not load data ... ", request);
 			})
 			.finally(() => this.updateAvailable());
+	},
+
+	/**
+	 * Overrides method for setting config to check if endpoint is correct for hourly
+	 *
+	 * @param config
+	 */
+	setConfig(config) {
+		this.config = config;
+		if (this.config.type === "hourly") {
+			this.config.weatherEndpoint = "/onecall";
+		}
 	},
 
 	/** OpenWeatherMap Specific Methods - These are not part of the default provider methods */
@@ -89,11 +113,15 @@ WeatherProvider.register("openweathermap", {
 	 * Generate a WeatherObject based on currentWeatherInformation
 	 */
 	generateWeatherObjectFromCurrentWeather(currentWeatherData) {
-		const currentWeather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+		const currentWeather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 
 		currentWeather.humidity = currentWeatherData.main.humidity;
 		currentWeather.temperature = currentWeatherData.main.temp;
-		currentWeather.windSpeed = currentWeatherData.wind.speed;
+		if (this.config.windUnits === "metric") {
+			currentWeather.windSpeed = this.config.useKmh ? currentWeatherData.wind.speed * 3.6 : currentWeatherData.wind.speed;
+		} else {
+			currentWeather.windSpeed = currentWeatherData.wind.speed;
+		}
 		currentWeather.windDirection = currentWeatherData.wind.deg;
 		currentWeather.weatherType = this.convertWeatherType(currentWeatherData.weather[0].icon);
 		currentWeather.sunrise = moment(currentWeatherData.sys.sunrise, "X");
@@ -112,7 +140,7 @@ WeatherProvider.register("openweathermap", {
 			return this.fetchForecastDaily(forecasts);
 		}
 		// if weatherEndpoint does not match forecast or forecast/daily, what should be returned?
-		const days = [new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits)];
+		const days = [new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh)];
 		return days;
 	},
 
@@ -124,7 +152,7 @@ WeatherProvider.register("openweathermap", {
 			return this.fetchOnecall(data);
 		}
 		// if weatherEndpoint does not match onecall, what should be returned?
-		const weatherData = { current: new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits), hours: [], days: [] };
+		const weatherData = { current: new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh), hours: [], days: [] };
 		return weatherData;
 	},
 
@@ -141,7 +169,7 @@ WeatherProvider.register("openweathermap", {
 		let snow = 0;
 		// variable for date
 		let date = "";
-		let weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+		let weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 
 		for (const forecast of forecasts) {
 			if (date !== moment(forecast.dt, "X").format("YYYY-MM-DD")) {
@@ -154,7 +182,7 @@ WeatherProvider.register("openweathermap", {
 				// push weather information to days array
 				days.push(weather);
 				// create new weather-object
-				weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+				weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 
 				minTemp = [];
 				maxTemp = [];
@@ -217,7 +245,7 @@ WeatherProvider.register("openweathermap", {
 		const days = [];
 
 		for (const forecast of forecasts) {
-			const weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+			const weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 
 			weather.date = moment(forecast.dt, "X");
 			weather.minTemperature = forecast.temp.min;
@@ -263,7 +291,7 @@ WeatherProvider.register("openweathermap", {
 		let precip = false;
 
 		// get current weather, if requested
-		const current = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+		const current = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 		if (data.hasOwnProperty("current")) {
 			current.date = moment(data.current.dt, "X").utcOffset(data.timezone_offset / 60);
 			current.windSpeed = data.current.wind_speed;
@@ -295,7 +323,7 @@ WeatherProvider.register("openweathermap", {
 			current.feelsLikeTemp = data.current.feels_like;
 		}
 
-		let weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+		let weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 
 		// get hourly weather, if requested
 		const hours = [];
@@ -331,7 +359,7 @@ WeatherProvider.register("openweathermap", {
 				}
 
 				hours.push(weather);
-				weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+				weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 			}
 		}
 
@@ -370,7 +398,7 @@ WeatherProvider.register("openweathermap", {
 				}
 
 				days.push(weather);
-				weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+				weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
 			}
 		}
 
