@@ -1,3 +1,5 @@
+#Please read this before submitting an issue and ask yourself what's appropriate:
+
 ## I'm not sure if this is a bug
 
 If you're not sure if it's a real bug or if it's just you, please open a topic on the forum: [https://forum.magicmirror.builders/category/15/bug-hunt](https://forum.magicmirror.builders/category/15/bug-hunt)
