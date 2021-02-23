@@ -97,6 +97,7 @@ var Loader = (function () {
 				path: moduleFolder + "/",
 				file: moduleName + ".js",
 				position: moduleData.position,
+				grid: moduleData.grid,
 				header: moduleData.header,
 				configDeepMerge: typeof moduleData.configDeepMerge === "boolean" ? moduleData.configDeepMerge : false,
 				config: moduleData.config,

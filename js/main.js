@@ -18,13 +18,7 @@ var MM = (function () {
 		var domCreationPromises = [];
 
 		modules.forEach(function (module) {
-			if (typeof module.data.position !== "string") {
-				return;
-			}
-
-			var wrapper = selectWrapper(module.data.position);
-
-			var dom = document.createElement("div");
+			let dom = document.createElement("div");
 			dom.id = module.identifier;
 			dom.className = module.name;
 
@@ -33,7 +27,18 @@ var MM = (function () {
 			}
 
 			dom.opacity = 0;
-			wrapper.appendChild(dom);
+
+			// TODO make switch
+			if (typeof module.data.position === "string") {
+				let wrapper = selectWrapper(module.data.position);
+				wrapper.appendChild(dom);
+			} else if (typeof module.data.grid === "string") {
+				let grid = document.getElementsByClassName("region grid")[0];
+				dom.style.gridArea = module.data.grid;
+				grid.appendChild(dom);
+			} else {
+				return;
+			}
 
 			var moduleHeader = document.createElement("header");
 			moduleHeader.innerHTML = module.getHeader();
@@ -549,7 +554,7 @@ var MM = (function () {
 				return;
 			}
 
-			if (!module.data.position) {
+			if (!module.data.position && !module.data.grid) {
 				Log.warn("module tries to update the DOM without being displayed.");
 				return;
 			}
