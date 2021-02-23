@@ -173,6 +173,14 @@ sup {
   position: absolute;
 }
 
+.region.grid {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: repeat(12, 1fr);
+}
+
 .region.fullscreen {
   position: absolute;
   top: calc(-1 * var(--gap-body-top));

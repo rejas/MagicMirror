@@ -104,6 +104,7 @@ const Loader = (function () {
 				file: moduleName + ".js",
 				position: moduleData.position,
 				hiddenOnStartup: moduleData.hiddenOnStartup,
+				grid: moduleData.grid,
 				header: moduleData.header,
 				configDeepMerge: typeof moduleData.configDeepMerge === "boolean" ? moduleData.configDeepMerge : false,
 				config: moduleData.config,
