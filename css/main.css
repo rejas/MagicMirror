@@ -1,7 +1,16 @@
+:root {
+  --colorBlack: #000;
+  --colorGrey40: #666;
+  --colorGrey60: #999;
+  --colorWhite: #fff;
+
+  --fontSizeSmall: 1rem;
+}
+
 html {
   cursor: none;
   overflow: hidden;
-  background: #000;
+  background: var(--colorBlack);
   user-select: none;
 }
 
@@ -14,7 +23,7 @@ body {
   position: absolute;
   height: calc(100% - 120px);
   width: calc(100% - 120px);
-  background: #000;
+  background: var(--colorBlack);
   color: #aaa;
   font-family: "Roboto Condensed", sans-serif;
   font-weight: 400;
@@ -36,7 +45,7 @@ body {
 }
 
 .bright {
-  color: #fff;
+  color: var(--colorWhite);
 }
 
 .xsmall {
