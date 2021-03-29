@@ -4,23 +4,24 @@
  * By Michael Teeuw https://michaelteeuw.nl
  * MIT Licensed.
  */
-const Class = require("./class.js");
 const Log = require("logger");
 const express = require("express");
 
-const NodeHelper = Class.extend({
+class NodeHelper {
+	constructor() {}
+
 	init() {
 		Log.log("Initializing new module helper ...");
-	},
+	}
 
 	loaded(callback) {
 		Log.log(`Module helper loaded: ${this.name}`);
 		callback();
-	},
+	}
 
 	start() {
 		Log.log(`Starting module helper: ${this.name}`);
-	},
+	}
 
 	/**
 	 * Called when the MagicMirror² server receives a `SIGINT`
@@ -29,7 +30,7 @@ const NodeHelper = Class.extend({
 	 */
 	stop() {
 		Log.log(`Stopping module helper: ${this.name}`);
-	},
+	}
 
 	/**
 	 * This method is called when a socket notification arrives.
@@ -39,7 +40,7 @@ const NodeHelper = Class.extend({
 	 */
 	socketNotificationReceived(notification, payload) {
 		Log.log(`${this.name} received a socket notification: ${notification} - Payload: ${payload}`);
-	},
+	}
 
 	/**
 	 * Set the module name.
@@ -48,7 +49,7 @@ const NodeHelper = Class.extend({
 	 */
 	setName(name) {
 		this.name = name;
-	},
+	}
 
 	/**
 	 * Set the module path.
@@ -57,7 +58,7 @@ const NodeHelper = Class.extend({
 	 */
 	setPath(path) {
 		this.path = path;
-	},
+	}
 
 	/* sendSocketNotification(notification, payload)
 	 * Send a socket notification to the node helper.
@@ -67,7 +68,7 @@ const NodeHelper = Class.extend({
 	 */
 	sendSocketNotification(notification, payload) {
 		this.io.of(this.name).emit(notification, payload);
-	},
+	}
 
 	/* setExpressApp(app)
 	 * Sets the express app object for this module.
@@ -79,7 +80,7 @@ const NodeHelper = Class.extend({
 		this.expressApp = app;
 
 		app.use(`/${this.name}`, express.static(`${this.path}/public`));
-	},
+	}
 
 	/* setSocketIO(io)
 	 * Sets the socket io object for this module.
@@ -110,7 +111,7 @@ const NodeHelper = Class.extend({
 			});
 		});
 	}
-});
+}
 
 NodeHelper.checkFetchStatus = function (response) {
 	// response.status >= 200 && response.status < 300
@@ -139,6 +140,7 @@ NodeHelper.checkFetchError = function (error) {
 };
 
 NodeHelper.create = function (moduleDefinition) {
+	console.log(moduleDefinition);
 	return NodeHelper.extend(moduleDefinition);
 };
 
