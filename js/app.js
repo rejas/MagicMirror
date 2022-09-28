@@ -54,9 +54,9 @@ function App() {
 	 * Loads the config file. Combines it with the defaults, and runs the
 	 * callback with the found config as argument.
 	 *
-	 * @param {Function} callback Function to be called after loading the config
+	 * @returns {Promise} resolved when the config is loaded
 	 */
-	function loadConfig(callback) {
+	async function loadConfig() {
 		Log.log("Loading config ...");
 		const defaults = require(`${__dirname}/defaults`);
 
@@ -68,8 +68,7 @@ function App() {
 			fs.accessSync(configFilename, fs.F_OK);
 			const c = require(configFilename);
 			checkDeprecatedOptions(c);
-			const config = Object.assign(defaults, c);
-			callback(config);
+			return Object.assign(defaults, c);
 		} catch (e) {
 			if (e.code === "ENOENT") {
 				Log.error(Utils.colors.error("WARNING! Could not find config file. Please create one. Starting with default configuration."));
@@ -78,7 +77,7 @@ function App() {
 			} else {
 				Log.error(Utils.colors.error(`WARNING! Could not load config file. Starting with default configuration. Error found: ${e}`));
 			}
-			callback(defaults);
+			return defaults;
 		}
 	}
 
@@ -102,9 +101,9 @@ function App() {
 	 * Loads a specific module.
 	 *
 	 * @param {string} module The name of the module (including subpath).
-	 * @param {Function} callback Function to be called after loading
+	 * @returns {Promise} resolved when the module is loaded
 	 */
-	function loadModule(module, callback) {
+	async function loadModule(module) {
 		const elements = module.split("/");
 		const moduleName = elements[elements.length - 1];
 		let moduleFolder = `${__dirname}/../modules/${module}`;
@@ -141,9 +140,7 @@ function App() {
 			m.setPath(path.resolve(moduleFolder));
 			nodeHelpers.push(m);
 
-			m.loaded(callback);
-		} else {
-			callback();
+			return m.loaded();
 		}
 	}
 
@@ -151,29 +148,26 @@ function App() {
 	 * Loads all modules.
 	 *
 	 * @param {Module[]} modules All modules to be loaded
-	 * @param {Function} callback Function to be called after loading
+	 * @returns {Promise} resolved when the modules are loaded
 	 */
-	function loadModules(modules, callback) {
+	function loadModules(modules) {
 		Log.log("Loading module helpers ...");
 
-		/**
-		 *
-		 */
-		function loadNextModule() {
-			if (modules.length > 0) {
-				const nextModule = modules[0];
-				loadModule(nextModule, function () {
-					modules = modules.slice(1);
-					loadNextModule();
-				});
-			} else {
-				// All modules are loaded
-				Log.log("All module helpers loaded.");
-				callback();
+		// Don't load modules twice or that are disabled
+		const moduleList = config.modules.reduce((prev, curr) => {
+			if (!prev.includes(curr.module) && !curr.disabled) {
+				prev.push(curr.module);
 			}
-		}
+			return prev;
+		}, []);
 
-		loadNextModule();
+		// Load each module
+		const promises = moduleList.map((m) => loadModule(m));
+
+		// Wait for modules to finish loading
+		return Promise.all(promises).then((values) => {
+			Log.log("All module helpers loaded.");
+		});
 	}
 
 	/**
@@ -208,37 +202,27 @@ function App() {
 	 *
 	 * @param {Function} callback Function to be called after start
 	 */
-	this.start = function (callback) {
-		loadConfig(function (c) {
-			config = c;
+	this.start = async function (callback) {
+		config = await loadConfig();
 
-			Log.setLogLevel(config.logLevel);
+		Log.setLogLevel(config.logLevel);
 
-			let modules = [];
+		await loadModules(config.modules);
 
-			for (const module of config.modules) {
-				if (!modules.includes(module.module) && !module.disabled) {
-					modules.push(module.module);
-				}
+		httpServer = new Server(config, (app, io) => {
+			Log.log("Server started ...");
+
+			for (let nodeHelper of nodeHelpers) {
+				nodeHelper.setExpressApp(app);
+				nodeHelper.setSocketIO(io);
+				nodeHelper.start();
 			}
 
-			loadModules(modules, function () {
-				httpServer = new Server(config, function (app, io) {
-					Log.log("Server started ...");
+			Log.log("Sockets connected & modules started ...");
 
-					for (let nodeHelper of nodeHelpers) {
-						nodeHelper.setExpressApp(app);
-						nodeHelper.setSocketIO(io);
-						nodeHelper.start();
-					}
-
-					Log.log("Sockets connected & modules started ...");
-
-					if (typeof callback === "function") {
-						callback(config);
-					}
-				});
-			});
+			if (typeof callback === "function") {
+				callback(config);
+			}
 		});
 	};
 
