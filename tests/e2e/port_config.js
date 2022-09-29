@@ -2,8 +2,8 @@ const helpers = require("./global-setup");
 
 describe("port directive configuration", () => {
 	describe("Set port 8090", () => {
-		beforeAll(() => {
-			helpers.startApplication("tests/configs/port_8090.js");
+		beforeAll(async () => {
+			await helpers.startApplication("tests/configs/port_8090.js");
 		});
 		afterAll(async () => {
 			await helpers.stopApplication();

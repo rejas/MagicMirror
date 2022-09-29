@@ -49,6 +49,7 @@ process.on("uncaughtException", function (err) {
 function App() {
 	let nodeHelpers = [];
 	let httpServer;
+	let config;
 
 	/**
 	 * Loads the config file. Combines it with the defaults, and runs the
@@ -154,7 +155,7 @@ function App() {
 		Log.log("Loading module helpers ...");
 
 		// Don't load modules twice or that are disabled
-		const moduleList = config.modules.reduce((prev, curr) => {
+		const moduleList = modules.reduce((prev, curr) => {
 			if (!prev.includes(curr.module) && !curr.disabled) {
 				prev.push(curr.module);
 			}
@@ -203,13 +204,13 @@ function App() {
 	 * @param {Function} callback Function to be called after start
 	 */
 	this.start = async function (callback) {
-		config = await loadConfig();
+		this.config = await loadConfig();
 
-		Log.setLogLevel(config.logLevel);
+		Log.setLogLevel(this.config.logLevel);
 
-		await loadModules(config.modules);
+		await loadModules(this.config.modules);
 
-		httpServer = new Server(config, (app, io) => {
+		httpServer = new Server(this.config, (app, io) => {
 			Log.log("Server started ...");
 
 			for (let nodeHelper of nodeHelpers) {
@@ -221,7 +222,7 @@ function App() {
 			Log.log("Sockets connected & modules started ...");
 
 			if (typeof callback === "function") {
-				callback(config);
+				callback(this.config);
 			}
 		});
 	};

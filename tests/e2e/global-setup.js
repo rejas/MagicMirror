@@ -1,7 +1,7 @@
 const jsdom = require("jsdom");
 const corefetch = require("fetch");
 
-exports.startApplication = (configFilename, exec) => {
+exports.startApplication = async (configFilename, exec) => {
 	jest.resetModules();
 	this.stopApplication();
 	// Set config sample for use in test
@@ -12,7 +12,7 @@ exports.startApplication = (configFilename, exec) => {
 	}
 	if (exec) exec;
 	global.app = require("app.js");
-	global.app.start();
+	await global.app.start();
 };
 
 exports.stopApplication = async () => {
