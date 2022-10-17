@@ -15,9 +15,15 @@ const generateWeather = (extendedData = {}) => {
 				},
 				weather: [
 					{
+						id: 615,
+						main: "Snow",
+						description: "light rain and snow",
+						icon: "13d"
+					},
+					{
 						id: 500,
 						main: "Rain",
-						description: "Leichter Regen",
+						description: "light rain",
 						icon: "10d"
 					}
 				],
