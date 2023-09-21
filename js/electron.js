@@ -5,7 +5,7 @@ const core = require("./app");
 const Log = require("./logger");
 
 // Config
-let config = process.env.config ? JSON.parse(process.env.config) : {};
+let config;
 // Module to control application life.
 const app = electron.app;
 // If ELECTRON_DISABLE_GPU is set electron is started with --disable-gpu flag.
@@ -20,6 +20,19 @@ const BrowserWindow = electron.BrowserWindow;
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
+
+/**
+ * Start the core application if server is run on localhost
+ * This starts all node helpers and starts the webserver.
+ *
+ * @returns {Promise} A promise that is resolved when the server has started
+ */
+async function startAppIfNeeded() {
+	let localConfig = process.env.config ? JSON.parse(process.env.config) : {};
+	if (["localhost", "127.0.0.1", "::1", "::ffff:127.0.0.1", undefined].includes(localConfig.address)) {
+		config = await core.start();
+	}
+}
 
 /**
  *
@@ -162,10 +175,7 @@ app.on("activate", function () {
 app.on("before-quit", async (event) => {
 	Log.log("Shutting down server...");
 	event.preventDefault();
-	setTimeout(() => {
-		process.exit(0);
-	}, 3000); // Force-quit after 3 seconds.
-	await core.stop();
+	await core.stop(3000); // Force-quit after 3 seconds.
 	process.exit(0);
 });
 

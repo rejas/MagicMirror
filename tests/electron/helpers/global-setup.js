@@ -3,43 +3,62 @@
 // https://www.anycodings.com/1questions/958135/can-i-set-the-date-for-playwright-browser
 const { _electron: electron } = require("playwright");
 
-exports.startApplication = async (configFilename, systemDate = null, electronParams = ["js/electron.js"]) => {
-	global.electronApp = null;
-	global.page = null;
+function applyMocks(page) {
+	if (global.mocks) {
+		for (let mock of global.mocks) {
+			mock(page);
+		}
+	}
+}
+
+exports.startApplication = async (configFilename, electronParams = ["js/electron.js"]) => {
+	await this.stopApplication();
 	process.env.MM_CONFIG_FILE = configFilename;
 	process.env.TZ = "GMT";
 	global.electronApp = await electron.launch({ args: electronParams });
 
-	await global.electronApp.firstWindow();
+	//Make sure new open windows gets mocked too
+	global.electronApp.on("window", applyMocks);
 
-	for (const win of global.electronApp.windows()) {
-		const title = await win.title();
-		expect(["MagicMirror²", "DevTools"]).toContain(title);
-		if (title === "MagicMirror²") {
-			global.page = win;
-			if (systemDate) {
-				await global.page.evaluate((systemDate) => {
-					Date.now = () => {
-						return new Date(systemDate);
-					};
-				}, systemDate);
-			}
-		}
+	//Apply mocks for all existing pages
+	for (let page of global.electronApp.windows()) {
+		applyMocks(page);
 	}
+
+	//We only need the first window for the majority of the tests
+	global.page = await global.electronApp.firstWindow();
+
+	//Wait for the body element to be visible
+	await global.page.waitForSelector("body");
 };
 
 exports.stopApplication = async () => {
 	if (global.electronApp) {
 		await global.electronApp.close();
+		global.electronApp = null;
+		global.page = null;
+		global.mocks = null;
 	}
-	global.electronApp = null;
-	global.page = null;
 };
 
 exports.getElement = async (selector) => {
-	expect(global.page);
+	expect(global.page).not.toBe(null);
 	let elem = global.page.locator(selector);
 	await elem.waitFor();
 	expect(elem).not.toBe(null);
 	return elem;
+};
+
+exports.mockSystemDate = (mockedSystemDate) => {
+	if (!global.mocks) {
+		global.mocks = [];
+	}
+
+	global.mocks.push(async (page) => {
+		await page.evaluate((systemDate) => {
+			Date.now = () => {
+				return new Date(systemDate);
+			};
+		}, mockedSystemDate);
+	});
 };

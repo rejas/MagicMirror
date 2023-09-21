@@ -19,7 +19,7 @@ describe("Electron app environment", () => {
 
 describe("Development console tests", () => {
 	beforeEach(async () => {
-		await helpers.startApplication("tests/configs/modules/display.js", null, ["js/electron.js", "dev"]);
+		await helpers.startApplication("tests/configs/modules/display.js", ["js/electron.js", "dev"]);
 	});
 
 	afterEach(async () => {
@@ -27,10 +27,11 @@ describe("Development console tests", () => {
 	});
 
 	it("should open browserwindow and dev console", async () => {
-		while (global.electronApp.windows().length < 2) await events.once(global.electronApp, "window");
-		const pageArray = await global.electronApp.windows();
-		expect(pageArray.length).toBe(2);
-		for (const page of pageArray) {
+		while (global.electronApp.windows().length < 2) {
+			await global.electronApp.waitForEvent("window");
+		}
+
+		for (let page of global.electronApp.windows()) {
 			expect(["MagicMirror²", "DevTools"]).toContain(await page.title());
 		}
 	});

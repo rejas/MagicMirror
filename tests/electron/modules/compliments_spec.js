@@ -18,17 +18,20 @@ describe("Compliments module", () => {
 
 	describe("parts of days", () => {
 		it("Morning compliments for that part of day", async () => {
-			await helpers.startApplication("tests/configs/modules/compliments/compliments_parts_day.js", "01 Oct 2022 10:00:00 GMT");
+			helpers.mockSystemDate("01 Oct 2022 10:00:00 GMT");
+			await helpers.startApplication("tests/configs/modules/compliments/compliments_parts_day.js");
 			await doTest(["Hi", "Good Morning", "Morning test"]);
 		});
 
 		it("Afternoon show Compliments for that part of day", async () => {
-			await helpers.startApplication("tests/configs/modules/compliments/compliments_parts_day.js", "01 Oct 2022 15:00:00 GMT");
+			helpers.mockSystemDate("01 Oct 2022 15:00:00 GMT");
+			await helpers.startApplication("tests/configs/modules/compliments/compliments_parts_day.js");
 			await doTest(["Hello", "Good Afternoon", "Afternoon test"]);
 		});
 
 		it("Evening show Compliments for that part of day", async () => {
-			await helpers.startApplication("tests/configs/modules/compliments/compliments_parts_day.js", "01 Oct 2022 20:00:00 GMT");
+			helpers.mockSystemDate("01 Oct 2022 20:00:00 GMT");
+			await helpers.startApplication("tests/configs/modules/compliments/compliments_parts_day.js");
 			await doTest(["Hello There", "Good Evening", "Evening test"]);
 		});
 	});

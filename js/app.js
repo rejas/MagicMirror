@@ -8,7 +8,7 @@
 // Alias modules mentioned in package.js under _moduleAliases.
 require("module-alias/register");
 
-const fs = require("fs");
+const fs = require("fs/promises");
 const path = require("path");
 const envsub = require("envsub");
 const Log = require("logger");
@@ -53,7 +53,7 @@ function App() {
 	/**
 	 * Loads the config file. Combines it with the defaults and returns the config
 	 * @async
-	 * @returns {Promise<object>} the loaded config or the defaults if something goes wrong
+	 * @returns {Promise} A promise with the config that should be used
 	 */
 	async function loadConfig() {
 		Log.log("Loading config ...");
@@ -66,7 +66,7 @@ function App() {
 
 		// check if templateFile exists
 		try {
-			fs.accessSync(templateFile, fs.F_OK);
+			await fs.access(configFilename, fs.F_OK);
 		} catch (err) {
 			templateFile = null;
 			Log.debug("config template file not exists, no envsubst");
@@ -148,8 +148,9 @@ function App() {
 	/**
 	 * Loads a specific module.
 	 * @param {string} module The name of the module (including subpath).
+	 * @returns {Promise} A promise that resolves as soon as the module is loaded.
 	 */
-	function loadModule(module) {
+	async function loadModule(module) {
 		const elements = module.split("/");
 		const moduleName = elements[elements.length - 1];
 		let moduleFolder = `${__dirname}/../modules/${module}`;
@@ -158,25 +159,9 @@ function App() {
 			moduleFolder = `${__dirname}/../modules/default/${module}`;
 		}
 
-		const moduleFile = `${moduleFolder}/${module}.js`;
+		const helperPath = await resolveHelperPath(moduleFolder);
 
-		try {
-			fs.accessSync(moduleFile, fs.R_OK);
-		} catch (e) {
-			Log.warn(`No ${moduleFile} found for module: ${moduleName}.`);
-		}
-
-		const helperPath = `${moduleFolder}/node_helper.js`;
-
-		let loadHelper = true;
-		try {
-			fs.accessSync(helperPath, fs.R_OK);
-		} catch (e) {
-			loadHelper = false;
-			Log.log(`No helper found for module: ${moduleName}.`);
-		}
-
-		if (loadHelper) {
+		if (helperPath) {
 			const Module = require(helperPath);
 			let m = new Module();
 
@@ -194,7 +179,12 @@ function App() {
 			m.setPath(path.resolve(moduleFolder));
 			nodeHelpers.push(m);
 
-			m.loaded();
+			return new Promise((resolve, reject) => {
+				m.loaded(resolve);
+			});
+		} else {
+			Log.log(`No helper found for module: ${moduleName}.`);
+			return Promise.resolve();
 		}
 	}
 
@@ -237,11 +227,29 @@ function App() {
 	}
 
 	/**
+	 * Resolves the path to the node_helper
+	 *
+	 * @param {string} moduleFolder the folder that should contain the node_helper
+	 * @returns {Promise} A promise with the path to the node_helper that should be used, or undefined if none exists
+	 */
+	async function resolveHelperPath(moduleFolder) {
+		const helperPath = `${moduleFolder}/node_helper.js`;
+
+		try {
+			await fs.access(helperPath, fs.R_OK);
+			return helperPath;
+		} catch (e) {
+			// The current extension may not have been found, try the next instead
+			return undefined;
+		}
+	}
+
+	/**
 	 * Start the core app.
 	 *
 	 * It loads the config, then it loads all modules.
 	 * @async
-	 * @returns {Promise<object>} the config used
+	 * @returns {Promise} A promise containing the config, it is resolved when the server has loaded all modules and are listening for requests
 	 */
 	this.start = async function () {
 		config = await loadConfig();
@@ -249,6 +257,7 @@ function App() {
 		Log.setLogLevel(config.logLevel);
 
 		let modules = [];
+
 		for (const module of config.modules) {
 			if (!modules.includes(module.module) && !module.disabled) {
 				modules.push(module.module);
@@ -274,8 +283,7 @@ function App() {
 			}
 		}
 
-		const results = await Promise.allSettled(nodePromises);
-
+		let results = await Promise.allSettled(nodePromises);
 		// Log errors that happened during async node_helper startup
 		results.forEach((result) => {
 			if (result.status === "rejected") {
@@ -284,7 +292,6 @@ function App() {
 		});
 
 		Log.log("Sockets connected & modules started ...");
-
 		return config;
 	};
 
@@ -296,37 +303,30 @@ function App() {
 	 * @returns {Promise} A promise that is resolved when all node_helpers and
 	 * the http server has been closed
 	 */
-	this.stop = async function () {
-		const nodePromises = [];
-		for (let nodeHelper of nodeHelpers) {
-			try {
-				if (typeof nodeHelper.stop === "function") {
-					nodePromises.push(nodeHelper.stop());
-				}
-			} catch (error) {
-				Log.error(`Error when stopping node_helper for module ${nodeHelper.name}:`);
-				console.error(error);
+	this.stop = async function (timeout) {
+		for (const nodeHelper of nodeHelpers) {
+			if (typeof nodeHelper.stop === "function") {
+				nodeHelper.stop();
 			}
 		}
 
-		const results = await Promise.allSettled(nodePromises);
-
-		// Log errors that happened during async node_helper stopping
-		results.forEach((result) => {
-			if (result.status === "rejected") {
-				Log.error(result.reason);
-			}
-		});
-
-		Log.log("Node_helpers stopped ...");
-
-		// To be able to stop the app even if it hasn't been started (when
-		// running with Electron against another server)
+		// To be able to stop the app even if it hasn't been started (when running with Electron against another server)
 		if (!httpServer) {
 			return Promise.resolve();
 		}
 
-		return httpServer.close();
+		let serverClosePromise = httpServer.close();
+
+		// If a timeout is set, resolve when the server is closed or the timeout has been reached
+		if (timeout) {
+			let timeoutPromise = new Promise((resolve) => {
+				setTimeout(resolve, timeout);
+			});
+
+			return Promise.race([serverClosePromise, timeoutPromise]);
+		} else {
+			return serverClosePromise;
+		}
 	};
 
 	/**
@@ -338,10 +338,7 @@ function App() {
 	 */
 	process.on("SIGINT", async () => {
 		Log.log("[SIGINT] Received. Shutting down server...");
-		setTimeout(() => {
-			process.exit(0);
-		}, 3000); // Force quit after 3 seconds
-		await this.stop();
+		await this.stop(3000); // Force quit after 3 seconds
 		process.exit(0);
 	});
 
@@ -351,10 +348,7 @@ function App() {
 	 */
 	process.on("SIGTERM", async () => {
 		Log.log("[SIGTERM] Received. Shutting down server...");
-		setTimeout(() => {
-			process.exit(0);
-		}, 3000); // Force quit after 3 seconds
-		await this.stop();
+		await this.stop(3000); // Force quit after 3 seconds
 		process.exit(0);
 	});
 }
