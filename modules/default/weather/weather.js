@@ -1,4 +1,4 @@
-/* global WeatherProvider, WeatherUtils */
+/* global WeatherProvider, WeatherUtils, formatTime */
 
 /* MagicMirror²
  * Module: Weather
@@ -23,10 +23,12 @@ Module.register("weather", {
 		showHumidity: false,
 		showIndoorHumidity: false,
 		showIndoorTemperature: false,
+		allowOverrideNotification: false,
 		showPeriod: true,
 		showPeriodUpper: false,
 		showPrecipitationAmount: false,
 		showPrecipitationProbability: false,
+		showUVIndex: false,
 		showSun: true,
 		showWindDirection: true,
 		showWindDirectionAsArrow: false,
@@ -60,7 +62,7 @@ Module.register("weather", {
 
 	// Return the scripts that are necessary for the weather module.
 	getScripts: function () {
-		return ["moment.js", this.file("../utils.js"), "weatherutils.js", "weatherprovider.js", "weatherobject.js", "suncalc.js", this.file(`providers/${this.config.weatherProvider.toLowerCase()}.js`)];
+		return ["moment.js", "weatherutils.js", "weatherobject.js", this.file("providers/overrideWrapper.js"), "weatherprovider.js", "suncalc.js", this.file(`providers/${this.config.weatherProvider.toLowerCase()}.js`)];
 	},
 
 	// Override getHeader method.
@@ -118,6 +120,8 @@ Module.register("weather", {
 		} else if (notification === "INDOOR_HUMIDITY") {
 			this.indoorHumidity = this.roundValue(payload);
 			this.updateDom(300);
+		} else if (notification === "CURRENT_WEATHER_OVERRIDE" && this.config.allowOverrideNotification) {
+			this.weatherProvider.notificationReceived(payload);
 		}
 	},
 
@@ -211,50 +215,37 @@ Module.register("weather", {
 		this.nunjucksEnvironment().addFilter(
 			"formatTime",
 			function (date) {
-				date = moment(date);
-
-				if (this.config.timeFormat !== 24) {
-					if (this.config.showPeriod) {
-						if (this.config.showPeriodUpper) {
-							return date.format("h:mm A");
-						} else {
-							return date.format("h:mm a");
-						}
-					} else {
-						return date.format("h:mm");
-					}
-				}
-
-				return date.format("HH:mm");
+				return formatTime(this.config, date);
 			}.bind(this)
 		);
 
 		this.nunjucksEnvironment().addFilter(
 			"unit",
 			function (value, type, valueUnit) {
+				let formattedValue;
 				if (type === "temperature") {
-					value = `${this.roundValue(WeatherUtils.convertTemp(value, this.config.tempUnits))}°`;
+					formattedValue = `${this.roundValue(WeatherUtils.convertTemp(value, this.config.tempUnits))}°`;
 					if (this.config.degreeLabel) {
 						if (this.config.tempUnits === "metric") {
-							value += "C";
+							formattedValue += "C";
 						} else if (this.config.tempUnits === "imperial") {
-							value += "F";
+							formattedValue += "F";
 						} else {
-							value += "K";
+							formattedValue += "K";
 						}
 					}
 				} else if (type === "precip") {
 					if (value === null || isNaN(value) || value === 0 || value.toFixed(2) === "0.00") {
-						value = "";
+						formattedValue = "";
 					} else {
-						value = WeatherUtils.convertPrecipitationUnit(value, valueUnit, this.config.units);
+						formattedValue = WeatherUtils.convertPrecipitationUnit(value, valueUnit, this.config.units);
 					}
 				} else if (type === "humidity") {
-					value += "%";
+					formattedValue = `${value}%`;
 				} else if (type === "wind") {
-					value = WeatherUtils.convertWind(value, this.config.windUnits);
+					formattedValue = WeatherUtils.convertWind(value, this.config.windUnits);
 				}
-				return value;
+				return formattedValue;
 			}.bind(this)
 		);
 

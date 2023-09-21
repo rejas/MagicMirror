@@ -110,13 +110,15 @@ WeatherProvider.register("yr", {
 			this.getWeatherDataFromYr(weatherData?.downloadedAt)
 				.then((weatherData) => {
 					Log.debug("Got weather data from yr.");
+					let data;
 					if (weatherData) {
 						this.cacheWeatherData(weatherData);
+						data = weatherData;
 					} else {
 						//Undefined if unchanged
-						weatherData = this.getWeatherDataFromCache();
+						data = this.getWeatherDataFromCache();
 					}
-					resolve(weatherData);
+					resolve(data);
 				})
 				.catch((err) => {
 					Log.error(err);
@@ -266,14 +268,14 @@ WeatherProvider.register("yr", {
 			this.getStellarDataFromYr(today, 2)
 				.then((stellarData) => {
 					if (stellarData) {
-						stellarData = {
+						const data = {
 							today: stellarData
 						};
-						stellarData.tomorrow = Object.assign({}, stellarData.today);
-						stellarData.today.date = today;
-						stellarData.tomorrow.date = tomorrow;
-						this.cacheStellarData(stellarData);
-						resolve(stellarData);
+						data.tomorrow = Object.assign({}, data.today);
+						data.today.date = today;
+						data.tomorrow.date = tomorrow;
+						this.cacheStellarData(data);
+						resolve(data);
 					} else {
 						Log.error(`Something went wrong when fetching stellar data. Responses: ${stellarData}`);
 						reject(stellarData);
@@ -350,8 +352,7 @@ WeatherProvider.register("yr", {
 		if (hours.length < 2) {
 			hours = `0${hours}`;
 		}
-
-		return `${this.config.apiBase}/sunrise/2.0/.json?date=${date}&days=${days}&height=${altitude}&lat=${lat}&lon=${lon}&offset=${utcOffsetPrefix}${hours}%3A${minutes}`;
+		return `${this.config.apiBase}/sunrise/2.3/sun?lat=${lat}&lon=${lon}&date=${date}&offset=${utcOffsetPrefix}${hours}%3A${minutes}`;
 	},
 
 	cacheStellarData(data) {
@@ -360,8 +361,6 @@ WeatherProvider.register("yr", {
 
 	getWeatherDataFrom(forecast, stellarData, units) {
 		const weather = new WeatherObject();
-		const stellarTimesToday = stellarData?.today ? this.getStellarTimesFrom(stellarData.today, moment().format("YYYY-MM-DD")) : undefined;
-		const stellarTimesTomorrow = stellarData?.tomorrow ? this.getStellarTimesFrom(stellarData.tomorrow, moment().add(1, "days").format("YYYY-MM-DD")) : undefined;
 
 		weather.date = moment(forecast.time);
 		weather.windSpeed = forecast.data.instant.details.wind_speed;
@@ -375,10 +374,8 @@ WeatherProvider.register("yr", {
 		weather.precipitationProbability = forecast.precipitationProbability;
 		weather.precipitationUnits = units.precipitation_amount;
 
-		if (stellarTimesToday) {
-			weather.sunset = moment(stellarTimesToday.sunset.time);
-			weather.sunrise = weather.sunset < moment() && stellarTimesTomorrow ? moment(stellarTimesTomorrow.sunrise.time) : moment(stellarTimesToday.sunrise.time);
-		}
+		weather.sunrise = stellarData?.today?.properties?.sunrise?.time;
+		weather.sunset = stellarData?.today?.properties?.sunset?.time;
 
 		return weather;
 	},

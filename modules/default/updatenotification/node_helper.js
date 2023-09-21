@@ -25,15 +25,25 @@ module.exports = NodeHelper.create({
 	},
 
 	async socketNotificationReceived(notification, payload) {
-		if (notification === "CONFIG") {
-			this.config = payload;
-		} else if (notification === "MODULES") {
-			// if this is the 1st time thru the update check process
-			if (!this.updateProcessStarted) {
-				this.updateProcessStarted = true;
-				await this.configureModules(payload);
-				await this.performFetch();
-			}
+		switch (notification) {
+			case "CONFIG":
+				this.config = payload;
+				break;
+			case "MODULES":
+				// if this is the 1st time thru the update check process
+				if (!this.updateProcessStarted) {
+					this.updateProcessStarted = true;
+					await this.configureModules(payload);
+					await this.performFetch();
+				}
+				break;
+			case "SCAN_UPDATES":
+				// 1st time of check allows to force new scan
+				if (this.updateProcessStarted) {
+					clearTimeout(this.updateTimer);
+					await this.performFetch();
+				}
+				break;
 		}
 	},
 
@@ -44,15 +54,23 @@ module.exports = NodeHelper.create({
 			this.sendSocketNotification("STATUS", repo);
 		}
 
+		if (this.config.sendUpdatesNotifications) {
+			const updates = await this.gitHelper.checkUpdates();
+			if (updates.length) this.sendSocketNotification("UPDATES", updates);
+		}
+
 		this.scheduleNextFetch(this.config.updateInterval);
 	},
 
 	scheduleNextFetch(delay) {
 		clearTimeout(this.updateTimer);
 
-		this.updateTimer = setTimeout(() => {
-			this.performFetch();
-		}, Math.max(delay, ONE_MINUTE));
+		this.updateTimer = setTimeout(
+			() => {
+				this.performFetch();
+			},
+			Math.max(delay, ONE_MINUTE)
+		);
 	},
 
 	ignoreUpdateChecking(moduleName) {

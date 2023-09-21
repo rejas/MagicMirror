@@ -90,7 +90,6 @@ WeatherProvider.register("openweathermap", {
 
 	/**
 	 * Overrides method for setting config to check if endpoint is correct for hourly
-	 *
 	 * @param {object} config The configuration object
 	 */
 	setConfig(config) {
@@ -296,6 +295,7 @@ WeatherProvider.register("openweathermap", {
 			current.temperature = data.current.temp;
 			current.weatherType = this.convertWeatherType(data.current.weather[0].icon);
 			current.humidity = data.current.humidity;
+			current.uv_index = data.current.uvi;
 			if (data.current.hasOwnProperty("rain") && !isNaN(data.current["rain"]["1h"])) {
 				current.rain = data.current["rain"]["1h"];
 				precip = true;
@@ -324,6 +324,7 @@ WeatherProvider.register("openweathermap", {
 				weather.windFromDirection = hour.wind_deg;
 				weather.weatherType = this.convertWeatherType(hour.weather[0].icon);
 				weather.precipitationProbability = hour.pop ? hour.pop * 100 : undefined;
+				weather.uv_index = hour.uvi;
 				precip = false;
 				if (hour.hasOwnProperty("rain") && !isNaN(hour.rain["1h"])) {
 					weather.rain = hour.rain["1h"];
@@ -356,6 +357,7 @@ WeatherProvider.register("openweathermap", {
 				weather.windFromDirection = day.wind_deg;
 				weather.weatherType = this.convertWeatherType(day.weather[0].icon);
 				weather.precipitationProbability = day.pop ? day.pop * 100 : undefined;
+				weather.uv_index = day.uvi;
 				precip = false;
 				if (!isNaN(day.rain)) {
 					weather.rain = day.rain;
@@ -435,6 +437,7 @@ WeatherProvider.register("openweathermap", {
 		} else if (this.firstEvent && this.firstEvent.location) {
 			params += `q=${this.firstEvent.location}`;
 		} else {
+			// TODO hide doesnt exist!
 			this.hide(this.config.animationSpeed, { lockString: this.identifier });
 			return;
 		}

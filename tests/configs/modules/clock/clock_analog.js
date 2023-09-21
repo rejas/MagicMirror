@@ -9,7 +9,8 @@ let config = {
 			position: "middle_center",
 			config: {
 				displayType: "analog",
-				analogFace: "face-006"
+				analogFace: "face-006",
+				showDate: false
 			}
 		}
 	]

@@ -44,7 +44,6 @@ process.on("uncaughtException", function (err) {
 
 /**
  * The core app.
- *
  * @class
  */
 function App() {
@@ -53,7 +52,6 @@ function App() {
 
 	/**
 	 * Loads the config file. Combines it with the defaults and returns the config
-	 *
 	 * @async
 	 * @returns {Promise} A promise with the config that should be used
 	 */
@@ -78,7 +76,7 @@ function App() {
 			// save current config.js
 			try {
 				if (fs.existsSync(configFilename)) {
-					fs.copyFileSync(configFilename, `${configFilename}_${Date.now()}`);
+					fs.copyFileSync(configFilename, `${configFilename}-old`);
 				}
 			} catch (err) {
 				Log.warn(`Could not copy ${configFilename}: ${err.message}`);
@@ -135,7 +133,6 @@ function App() {
 	/**
 	 * Checks the config for deprecated options and throws a warning in the logs
 	 * if it encounters one option from the deprecated.js list
-	 *
 	 * @param {object} userConfig The user config
 	 */
 	function checkDeprecatedOptions(userConfig) {
@@ -150,7 +147,6 @@ function App() {
 
 	/**
 	 * Loads a specific module.
-	 *
 	 * @param {string} module The name of the module (including subpath).
 	 * @returns {Promise} A promise that resolves as soon as the module is loaded.
 	 */
@@ -194,7 +190,6 @@ function App() {
 
 	/**
 	 * Loads all modules.
-	 *
 	 * @param {Module[]} modules All modules to be loaded
 	 * @returns {Promise} A promise that is resolved when all modules been loaded
 	 */
@@ -210,7 +205,6 @@ function App() {
 
 	/**
 	 * Compare two semantic version numbers and return the difference.
-	 *
 	 * @param {string} a Version number a.
 	 * @param {string} b Version number b.
 	 * @returns {number} A positive number if a is larger than b, a negative
@@ -254,7 +248,6 @@ function App() {
 	 * Start the core app.
 	 *
 	 * It loads the config, then it loads all modules.
-	 *
 	 * @async
 	 * @returns {Promise} A promise containing the config, it is resolved when the server has loaded all modules and are listening for requests
 	 */
@@ -307,9 +300,8 @@ function App() {
 	 * exists.
 	 *
 	 * Added to fix #1056
-	 *
-	 * @param {number} timeout the amount of milliseconds before the returned promise should be automatically resolved
-	 * @returns {Promise} A promise that is resolved when all node_helpers and the http server has been closed
+	 * @returns {Promise} A promise that is resolved when all node_helpers and
+	 * the http server has been closed
 	 */
 	this.stop = async function (timeout) {
 		for (const nodeHelper of nodeHelpers) {

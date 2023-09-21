@@ -15,11 +15,10 @@ const socketio = require("socket.io");
 
 const Log = require("logger");
 const Utils = require("./utils");
-const { cors, getConfig, getHtml, getVersion } = require("./server_functions");
+const { cors, getConfig, getHtml, getVersion, getStartup } = require("./server_functions");
 
 /**
  * Server
- *
  * @param {object} config The MM config
  * @class
  */
@@ -31,7 +30,6 @@ function Server(config) {
 
 	/**
 	 * Opens the server for incoming connections
-	 *
 	 * @returns {Promise} A promise that is resolved when the server listens to connections
 	 */
 	this.open = function () {
@@ -93,6 +91,8 @@ function Server(config) {
 
 			app.get("/config", (req, res) => getConfig(req, res));
 
+			app.get("/startup", (req, res) => getStartup(req, res));
+
 			app.get("/", (req, res) => getHtml(req, res));
 
 			server.on("listening", () => {
@@ -106,7 +106,6 @@ function Server(config) {
 
 	/**
 	 * Closes the server and destroys all lingering connections to it.
-	 *
 	 * @returns {Promise} A promise that resolves when server has successfully shut down
 	 */
 	this.close = function () {
