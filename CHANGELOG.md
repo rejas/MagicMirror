@@ -7,11 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ❤️ **Donate:** Enjoying MagicMirror²? [Please consider a donation!](https://magicmirror.builders/#donate) With your help we can continue to improve the MagicMirror².
 
-## [2.33.0] - unreleased
+## [2.34.0] - unreleased
 
-planned for 2025-10-01
+planned for 2026-01-01
 
-Thanks to: @dathbe.
+### Added
+
+### Changed
+
+- [core] refactor: replace `module-alias` dependency with internal alias resolver (#3893)
+
+### Fixed
+
+### Updated
+
+## [2.33.0] - 2025-10-01
+
+Thanks to: @Crazylegstoo, @dathbe, @m-idler, @plebcity, @khassel, @KristjanESPERANTO, @rejas and @sdetweil!
 
 > ⚠️ This release needs nodejs version `v22.18.0 or higher`
 
@@ -45,7 +57,7 @@ Thanks to: @dathbe.
 ### Updated
 
 - [calendar] Update defaultSymbol name and also the link to the icon search site (#3879)
-- [core] Update dependencies including electron to v38 as well as github actions (#3831, #3849, #3857, #3858, #3872, #3876, #3882, #3891)
+- [core] Update dependencies including electron to v38 as well as github actions (#3831, #3849, #3857, #3858, #3872, #3876, #3882, #3891, #3896)
 - [weather] Update feels_like temperature calculation formula (#3869)
 - [weather] Update null value handling for weather type (#3892)
 - [layout] Update styles for weather and calendar (#3894)
@@ -60,7 +72,7 @@ Thanks to: @dathbe.
 - [core] Fixed socket.io timeout when server is slow to send notification, notification lost at client (#3380)
 - [tests] refactor AnimateCSS tests after jsdom 27 upgrade (#3891)
 - [weather] Use `apparent_temperature` data from openmeteo's hourly weather for current feelsLikeTemp (#3868).
-- [weather] Updated envcanada Provider to use new database/URL schema for accessing weather data (#3822).
+- [weather] Updated envcanada Provider to use new database/URL schema for accessing weather data (#3878).
 
 ## [2.32.0] - 2025-07-01
 
@@ -1826,7 +1838,8 @@ It includes (but is not limited to) the following features:
 
 This was part of the blogpost: [https://michaelteeuw.nl/post/83916869600/magic-mirror-part-vi-production-of-the](https://michaelteeuw.nl/post/83916869600/magic-mirror-part-vi-production-of-the)
 
-[2.33.0]: https://github.com/MagicMirrorOrg/MagicMirror/compare/v2.32.0...develop
+[2.34.0]: https://github.com/MagicMirrorOrg/MagicMirror/compare/v2.33.0...develop
+[2.33.0]: https://github.com/MagicMirrorOrg/MagicMirror/compare/v2.32.0...v2.33.0
 [2.32.0]: https://github.com/MagicMirrorOrg/MagicMirror/compare/v2.31.0...v2.32.0
 [2.31.0]: https://github.com/MagicMirrorOrg/MagicMirror/compare/v2.30.0...v2.31.0
 [2.30.0]: https://github.com/MagicMirrorOrg/MagicMirror/compare/v2.29.0...v2.30.0

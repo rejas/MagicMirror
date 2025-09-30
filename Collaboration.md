@@ -22,6 +22,7 @@ Are done by
 - [ ] @rejas
 - [ ] @sdetweil
 - [ ] @khassel
+- [ ] @KristjanESPERANTO
 
 ### Pre-Deployment steps
 
