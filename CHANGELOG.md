@@ -13,13 +13,22 @@ planned for 2026-01-01
 
 ### Added
 
+- [weather] feat: add configurable forecast date format option (#3918)
+
 ### Changed
 
 - [core] refactor: replace `module-alias` dependency with internal alias resolver (#3893)
 
 ### Fixed
 
+- feat: add ESlint rule `no-sparse-arrays` for config check to fix #3910 (#3911)
+- fixed eslint warnings shown in #3911 and updated npm publish docs (#3913)
+- [core] refactor: replace `express-ipfilter` with lightweight custom middleware (#3917) - This fixes security issue [CVE-2023-42282](https://github.com/advisories/GHSA-78xj-cgh5-2h22), which is not very likely to be exploitable in MagicMirror² setups, but still should be fixed.
+- fixed the Environment Canada weather URL (#3912) and now converts a windspeed of 'calm' to 0
+
 ### Updated
+
+- [core] Update dependencies (#3909, #3916, #3921)
 
 ## [2.33.0] - 2025-10-01
 

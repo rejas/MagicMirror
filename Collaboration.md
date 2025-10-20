@@ -36,7 +36,7 @@ Are done by
   - [ ] test `prep-release` branch
   - [ ] update `CHANGELOG.md`
     - [ ] add all contributor names: `...`
-    - [ ] add min. node version: > ⚠️ This release needs nodejs version `v22.18.0` or higher
+    - [ ] add min. node version: > ⚠️ This release needs nodejs version `v22.20.0` or higher
     - [ ] check release link at the bottom of the file
   - [ ] commit and push all changes
   - [ ] create pull request from `prep-release` to `develop` branch with title `Prepare Release 2.xx.0`
@@ -66,3 +66,7 @@ Are done by
 - [ ] close all issues with label `ready (coming with next release)`
 - [ ] release new documentation by merging `develop` on `master` in documentation repository
 - [ ] publish new version on [npm](https://www.npmjs.com/package/magicmirror)
+  - [ ] use a clean environment (e.g. container)
+  - [ ] clone this repository with the new `master` branch and `cd` into the local repository directory
+  - [ ] log in to npm with `npm login --auth-type legacy` which will ask for username and password and one-time-password which is sent via mail
+  - [ ] execute `npm publish`
