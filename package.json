@@ -94,7 +94,7 @@
 		"animate.css": "^4.1.1",
 		"console-stamp": "^3.1.2",
 		"croner": "^10.0.1",
-		"eslint": "^9.39.3",
+		"eslint": "^10.0.2",
 		"express": "^5.2.1",
 		"feedme": "^2.0.2",
 		"helmet": "^8.1.0",
